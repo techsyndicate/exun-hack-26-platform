@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/test.tsbuildinfo",
+    "lib": ["ES2024", "DOM"],
+    "types": ["bun"]
+  },
+  "include": ["src/**/*.test.ts", "worker-configuration.d.ts"]
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/worker.tsbuildinfo",
+    "lib": ["ES2024"],
+    "types": []
+  },
+  "include": ["src/worker", "src/shared", "worker-configuration.d.ts"],
+  "exclude": ["**/*.test.ts"]
+}
