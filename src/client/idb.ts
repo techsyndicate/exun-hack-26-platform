@@ -10,10 +10,7 @@ function open() {
   });
 }
 
-async function run<T>(
-  mode: IDBTransactionMode,
-  action: (store: IDBObjectStore) => IDBRequest<T>,
-) {
+async function run<T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>) {
   const db = await open();
   try {
     return await new Promise<T>((resolve, reject) => {
@@ -26,5 +23,7 @@ async function run<T>(
   }
 }
 
-export const readSlot = <T>(slot: string) => run<T | undefined>("readonly", (store) => store.get(slot));
-export const writeSlot = (slot: string, value: unknown) => run("readwrite", (store) => store.put(value, slot));
+export const readSlot = <T>(slot: string) =>
+  run<T | undefined>("readonly", (store) => store.get(slot));
+export const writeSlot = (slot: string, value: unknown) =>
+  run("readwrite", (store) => store.put(value, slot));

@@ -4,6 +4,7 @@ import { LedgerPage } from "./pages/LedgerPage";
 import { AuthPage } from "./pages/AuthPage";
 import { AgentProvider, useAgentState } from "./identity/agent";
 import { AccountPage } from "./pages/AccountPage";
+import { Direct } from "./pages/direct/Direct";
 
 function currentPath() {
   return window.location.pathname;
@@ -28,11 +29,10 @@ export function App() {
 function AgentRoutes({ path }: { path: string }) {
   const state = useAgentState();
   if (state.status === "loading") return <p>Loading</p>;
-  if (state.status === "unsupported")
-    return <p>This browser cannot store a signing key.</p>;
-  if (state.status === "new")
-    return <AuthPage signup={state.signup} signin={state.signin} />;
+  if (state.status === "unsupported") return <p>This browser cannot store a signing key.</p>;
+  if (state.status === "new") return <AuthPage signup={state.signup} signin={state.signin} />;
   if (path === "/ledger") return <LedgerPage />;
   if (path === "/account") return <AccountPage />;
+  if (path === "/direct") return <Direct />;
   return <HomePage />;
 }

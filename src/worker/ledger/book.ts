@@ -93,25 +93,15 @@ export class Book {
   }
 
   agent(id: string): AgentRow | null {
-    return (
-      this.sql
-        .exec<AgentRow>("SELECT * FROM agents WHERE id = ?", id)
-        .toArray()[0] ?? null
-    );
+    return this.sql.exec<AgentRow>("SELECT * FROM agents WHERE id = ?", id).toArray()[0] ?? null;
   }
 
   agents(): AgentRow[] {
-    return this.sql
-      .exec<AgentRow>("SELECT * FROM agents ORDER BY joined")
-      .toArray();
+    return this.sql.exec<AgentRow>("SELECT * FROM agents ORDER BY joined").toArray();
   }
 
   codenameTaken(codename: string): boolean {
-    return (
-      this.sql
-        .exec("SELECT 1 FROM agents WHERE codename = ?", codename)
-        .toArray().length > 0
-    );
+    return this.sql.exec("SELECT 1 FROM agents WHERE codename = ?", codename).toArray().length > 0;
   }
 
   balances(agent: string): Record<Resource, number> {
@@ -121,9 +111,10 @@ export class Book {
         amount: number;
       }>("SELECT resource, amount FROM balances WHERE agent = ?", agent)
       .toArray();
-    const held = Object.fromEntries(
-      RESOURCES.map((resource) => [resource, 0]),
-    ) as Record<Resource, number>;
+    const held = Object.fromEntries(RESOURCES.map((resource) => [resource, 0])) as Record<
+      Resource,
+      number
+    >;
     for (const row of rows) held[row.resource] = row.amount;
     return held;
   }
@@ -235,11 +226,7 @@ export class Book {
   }
 
   renameUser(userId: number, newUsername: string) {
-    this.sql.exec(
-      "UPDATE users SET username = ? WHERE id = ?",
-      newUsername,
-      userId,
-    );
+    this.sql.exec("UPDATE users SET username = ? WHERE id = ?", newUsername, userId);
   }
   userById(userId: number) {
     return (

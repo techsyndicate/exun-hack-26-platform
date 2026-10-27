@@ -1,0 +1,12 @@
+.container {
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 100%;
+  min-height: 100vh;
+
+  color: var(--color-pri);
+  background-image: url("/assets/home/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

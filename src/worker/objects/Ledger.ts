@@ -1,10 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import {
-  GENESIS_NOTE,
-  hashBlock,
-  type Block,
-  type BlockBody,
-} from "../../shared/ledger/block";
+import { GENESIS_NOTE, hashBlock, type Block, type BlockBody } from "../../shared/ledger/block";
 import { effectsOf } from "../../shared/ledger/effects";
 import type { Submission, Tx } from "../../shared/ledger/schema";
 import { verifySignature, withinClockSkew } from "../../shared/signature";
@@ -55,9 +50,7 @@ export class Ledger extends DurableObject<Env> {
   }
 
   agents() {
-    return this.book
-      .agents()
-      .map(({ id, codename, joined }) => ({ id, codename, joined }));
+    return this.book.agents().map(({ id, codename, joined }) => ({ id, codename, joined }));
   }
 
   agent(id: string) {

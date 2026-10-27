@@ -23,9 +23,7 @@ export function AccountPage() {
           credentials: "include",
         });
 
-        const data = (await response.json()) as
-          | (CurrentUser & { user?: never })
-          | { user: null };
+        const data = (await response.json()) as (CurrentUser & { user?: never }) | { user: null };
 
         if (!response.ok || ("user" in data && data.user === null)) {
           setMessage("You are not signed in.");

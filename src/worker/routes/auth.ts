@@ -52,10 +52,7 @@ async function matches(passwordText: string, hash: string, salt: string) {
 async function authenticatedUser(c: Context) {
   const token = tokenFromCookie(c.req.header("Cookie"));
   if (!token) return null;
-  const user = await ledger(c.env).session(
-    await sessionHash(token),
-    Date.now(),
-  );
+  const user = await ledger(c.env).session(await sessionHash(token), Date.now());
   return user;
 }
 
@@ -90,29 +87,18 @@ export const authRoutes = new Hono<{ Bindings: Env }>()
     if (!user) return c.json({ error: "Could not create the account." }, 500);
     const session = await createSession();
     await book.addSession(session.tokenHash, user.id, session.expiresAt);
-    return c.json(
-      { username: user.username, agent: user.agent, codename: user.codename },
-      201,
-      {
-        "Set-Cookie": sessionCookie(session.token, session.expiresAt),
-      },
-    );
+    return c.json({ username: user.username, agent: user.agent, codename: user.codename }, 201, {
+      "Set-Cookie": sessionCookie(session.token, session.expiresAt),
+    });
   })
   .post("/signin", validate("json", signin), async (c) => {
     const input = c.req.valid("json");
     const user = await ledger(c.env).user(input.username);
-    if (
-      !user ||
-      !(await matches(input.password, user.password_hash, user.password_salt))
-    ) {
+    if (!user || !(await matches(input.password, user.password_hash, user.password_salt))) {
       return c.json({ error: "Invalid username or password." }, 401);
     }
     const session = await createSession();
-    await ledger(c.env).addSession(
-      session.tokenHash,
-      user.id,
-      session.expiresAt,
-    );
+    await ledger(c.env).addSession(session.tokenHash, user.id, session.expiresAt);
     return c.json(
       {
         username: user.username,
@@ -133,9 +119,7 @@ export const authRoutes = new Hono<{ Bindings: Env }>()
   })
   .get("/me", async (c) => {
     const token = tokenFromCookie(c.req.header("Cookie"));
-    const user = token
-      ? await ledger(c.env).session(await sessionHash(token), Date.now())
-      : null;
+    const user = token ? await ledger(c.env).session(await sessionHash(token), Date.now()) : null;
     return user
       ? c.json({
           username: user.username,

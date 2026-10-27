@@ -26,7 +26,5 @@ export const ledgerRoutes = new Hono<{ Bindings: Env }>()
   })
   .post("/tx", validate("json", submissionSchema), async (c) => {
     const result = await ledger(c.env).submit(c.req.valid("json"));
-    return result.ok
-      ? c.json(result.block, 201)
-      : c.json({ error: result.error }, 409);
+    return result.ok ? c.json(result.block, 201) : c.json({ error: result.error }, 409);
   });

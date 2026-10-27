@@ -10,13 +10,7 @@ function randomBytes(length: number) {
 }
 
 export async function hashPassword(password: string, salt = randomBytes(16)) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    utf8(password),
-    "PBKDF2",
-    false,
-    ["deriveBits"],
-  );
+  const key = await crypto.subtle.importKey("raw", utf8(password), "PBKDF2", false, ["deriveBits"]);
   const saltBuffer = salt.buffer.slice(
     salt.byteOffset,
     salt.byteOffset + salt.byteLength,

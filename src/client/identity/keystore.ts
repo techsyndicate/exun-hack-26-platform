@@ -8,7 +8,10 @@ export type Keys = { readonly id: string; readonly privateKey: CryptoKey };
 export const loadKeys = () => readSlot<Keys>("agent");
 
 export async function createKeys(): Promise<Keys> {
-  const pair = (await crypto.subtle.generateKey(SIGNING_ALGORITHM, true, ["sign", "verify"])) as CryptoKeyPair;
+  const pair = (await crypto.subtle.generateKey(SIGNING_ALGORITHM, true, [
+    "sign",
+    "verify",
+  ])) as CryptoKeyPair;
   const raw = new Uint8Array((await crypto.subtle.exportKey("raw", pair.publicKey)) as ArrayBuffer);
   const keys = { id: toBase64Url(raw), privateKey: pair.privateKey };
   await writeSlot("agent", keys);
@@ -33,6 +36,10 @@ export async function importPrivateKey(id: string, encoded: string): Promise<Key
 }
 
 export async function sign(keys: Keys, payload: Json) {
-  const signature = await crypto.subtle.sign(SIGNING_ALGORITHM, keys.privateKey, utf8(canonical(payload)));
+  const signature = await crypto.subtle.sign(
+    SIGNING_ALGORITHM,
+    keys.privateKey,
+    utf8(canonical(payload)),
+  );
   return toBase64Url(new Uint8Array(signature));
 }

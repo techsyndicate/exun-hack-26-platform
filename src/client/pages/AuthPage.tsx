@@ -32,10 +32,16 @@ export function AuthPage({ signup, signin }: Props) {
     <main className="page">
       <h1>{mode === "signup" ? "Sign up" : "Sign in"}</h1>
       <form onSubmit={submit}>
-        <label>Username <input name="username" minLength={3} maxLength={32} required /></label>
-        <label>Password <input name="password" type="password" minLength={8} required /></label>
+        <label>
+          Username <input name="username" minLength={3} maxLength={32} required />
+        </label>
+        <label>
+          Password <input name="password" type="password" minLength={8} required />
+        </label>
         {mode === "signup" && (
-          <label>Codename <input name="codename" minLength={2} maxLength={16} required /></label>
+          <label>
+            Codename <input name="codename" minLength={2} maxLength={16} required />
+          </label>
         )}
         {message && <p role="alert">{message}</p>}
         <button>{mode === "signup" ? "Create account" : "Sign in"}</button>
