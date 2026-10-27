@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { verifyChain, type Block, type ChainCheck } from "../../shared/ledger/block";
+import {
+  verifyChain,
+  type Block,
+  type ChainCheck,
+} from "../../shared/ledger/block";
 import { RESOURCES, type Resource } from "../../shared/economy";
 import { useAgent } from "../identity/agent";
+import "./styles/ledger-page.css";
+import Navbar from "../components/Navbar";
 
 type Agent = { id: string; codename: string };
 const json = async <T,>(url: string): Promise<T> => {
@@ -33,7 +39,9 @@ export function LedgerPage() {
     void Promise.resolve()
       .then(load)
       .catch((error: unknown) => {
-        setMessage(error instanceof Error ? error.message : "Could not load the ledger.");
+        setMessage(
+          error instanceof Error ? error.message : "Could not load the ledger.",
+        );
       });
   }, [load]);
 
@@ -45,23 +53,33 @@ export function LedgerPage() {
       setAmount("");
       await Promise.all([refresh(), load()]);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not send resources.");
+      setMessage(
+        error instanceof Error ? error.message : "Could not send resources.",
+      );
     }
   }
 
   async function verify() {
     setChecking(true);
     try {
-      const head = await json<{ height: number; hash: string }>("/api/ledger/head");
+      const head = await json<{ height: number; hash: string }>(
+        "/api/ledger/head",
+      );
       const pages = await Promise.all(
-        Array.from({ length: Math.ceil((head.height + 1) / 1000) }, (_, index) =>
-          json<Block[]>(`/api/ledger/range?from=${index * 1000}&limit=1000`),
+        Array.from(
+          { length: Math.ceil((head.height + 1) / 1000) },
+          (_, index) =>
+            json<Block[]>(`/api/ledger/range?from=${index * 1000}&limit=1000`),
         ),
       );
-      const result = await verifyChain(pages.flat().slice(0, head.height + 1), [head]);
+      const result = await verifyChain(pages.flat().slice(0, head.height + 1), [
+        head,
+      ]);
       setCheck(result);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not verify the chain.");
+      setMessage(
+        error instanceof Error ? error.message : "Could not verify the chain.",
+      );
     } finally {
       setChecking(false);
     }
@@ -70,14 +88,33 @@ export function LedgerPage() {
   const others = agents.filter((agent) => agent.id !== profile.id);
   const value = Number(amount);
   const valid =
-    Boolean(to) && Number.isInteger(value) && value > 0 && value <= profile.balances[resource];
+    Boolean(to) &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value <= profile.balances[resource];
 
   return (
-    <main className="page">
-      <h1>Ledger</h1>
-      <p>Every transaction is signed by the agent who made it and linked to the block before it.</p>
-      <p>{RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(", ")}</p>
-      <section>
+    <div className="main">
+      <div className="container">
+        <Navbar />
+      </div>
+
+      <div className="ledger-section">
+        <p>
+          Ledger is a place where all transactions are recorded and verified.
+          Every transaction is signed by the agent who made it and linked to the
+          block before it. All the transactions are completely encrypted using
+          the agent's signing key, so only the agent can read them. Using
+          algorithms like sha-256, the ledger can be verified to ensure that no
+          one has tampered with it.
+        </p>
+      </div>
+      <p>
+        {RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(
+          ", ",
+        )}
+      </p>
+      <div>
         <h2>Send resources</h2>
         {others.length === 0 ? (
           <p>No other agents have enlisted yet.</p>
@@ -85,7 +122,11 @@ export function LedgerPage() {
           <form onSubmit={send}>
             <label>
               To{" "}
-              <select value={to} onChange={(event) => setTo(event.target.value)} required>
+              <select
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+                required
+              >
                 <option value="" disabled>
                   Pick an agent
                 </option>
@@ -100,7 +141,9 @@ export function LedgerPage() {
               Amount{" "}
               <input
                 value={amount}
-                onChange={(event) => setAmount(event.target.value.replace(/\D/g, ""))}
+                onChange={(event) =>
+                  setAmount(event.target.value.replace(/\D/g, ""))
+                }
                 inputMode="numeric"
                 required
               />
@@ -109,7 +152,9 @@ export function LedgerPage() {
               Resource{" "}
               <select
                 value={resource}
-                onChange={(event) => setResource(event.target.value as Resource)}
+                onChange={(event) =>
+                  setResource(event.target.value as Resource)
+                }
               >
                 {RESOURCES.map((item) => (
                   <option key={item}>{item}</option>
@@ -120,23 +165,26 @@ export function LedgerPage() {
           </form>
         )}
         {message && <p role="status">{message}</p>}
-      </section>
-      <section>
+      </div>
+      <div>
         <h2>Verify the chain</h2>
         <p>
-          Download every block and check its hash, signature, links, and effects in this browser.
+          Download every block and check its hash, signature, links, and effects
+          in this browser.
         </p>
         <button onClick={() => void verify()} disabled={checking}>
           {checking ? "Checking" : "Verify"}
         </button>
-        {check?.ok && <p role="status">All {check.head.height + 1} blocks check out.</p>}
+        {check?.ok && (
+          <p role="status">All {check.head.height + 1} blocks check out.</p>
+        )}
         {check && !check.ok && (
           <p role="alert">
             Block {check.height} fails because {check.reason}.
           </p>
         )}
-      </section>
-      <section>
+      </div>
+      <div>
         <h2>Blocks</h2>
         <table>
           <thead>
@@ -152,13 +200,15 @@ export function LedgerPage() {
               <tr key={block.hash}>
                 <td>{block.height}</td>
                 <td>{block.tx.kind}</td>
-                <td className="break">{block.tx.kind === "genesis" ? "-" : block.tx.agent}</td>
+                <td className="break">
+                  {block.tx.kind === "genesis" ? "-" : block.tx.agent}
+                </td>
                 <td className="break">{block.hash}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

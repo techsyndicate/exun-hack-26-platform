@@ -1,0 +1,32 @@
+.container {
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 100%;
+  min-height: 100vh;
+
+  color: var(--color-pri);
+  background-image: url("/assets/ledger/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.main {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+}
+
+.ledger-section {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+  margin-top: 5vh;
+}
+
+.ledger-section p {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  padding: 0 6vw;
+  text-align: center;
+}
