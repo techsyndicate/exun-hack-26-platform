@@ -1,11 +1,13 @@
 import { Hono } from "hono";
 import { agentRoutes } from "./routes/agents";
 import { ledgerRoutes } from "./routes/ledger";
+import { authRoutes } from "./routes/auth";
 
 const app = new Hono<{ Bindings: Env }>()
   .basePath("/api")
   .route("/agents", agentRoutes)
-  .route("/ledger", ledgerRoutes);
+  .route("/ledger", ledgerRoutes)
+  .route("/auth", authRoutes);
 
 export type AppType = typeof app;
 export { Ledger } from "./objects/Ledger";

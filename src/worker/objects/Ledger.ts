@@ -60,6 +60,10 @@ export class Ledger extends DurableObject<Env> {
       .map(({ id, codename, joined }) => ({ id, codename, joined }));
   }
 
+  agent(id: string) {
+    return this.book.agent(id);
+  }
+
   profile(id: string) {
     const agent = this.book.agent(id);
     if (!agent) return null;
@@ -68,6 +72,36 @@ export class Ledger extends DurableObject<Env> {
       balances: this.book.balances(id),
       history: this.book.byAgent(id, 20),
     };
+  }
+
+  user(username: string) {
+    return this.book.user(username);
+  }
+
+  addUser(user: {
+    username: string;
+    passwordHash: string;
+    passwordSalt: string;
+    agent: string;
+    privateKey: string;
+    codename: string;
+  }) {
+    return this.book.addUser(user);
+  }
+
+  session(tokenHash: string, now: number) {
+    return this.book.session(tokenHash, now);
+  }
+
+  addSession(tokenHash: string, userId: number, expiresAt: number) {
+    this.book.addSession(tokenHash, userId, expiresAt);
+  }
+
+  removeSession(tokenHash: string) {
+    this.book.removeSession(tokenHash);
+  }
+  renameUser(userId: number, newUsername: string) {
+    this.book.renameUser(userId, newUsername);
   }
 
   private async process({ tx, signature }: Submission): Promise<SubmitResult> {

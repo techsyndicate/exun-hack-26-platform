@@ -25,6 +25,20 @@ const SCHEMA = `
     amount INTEGER NOT NULL,
     PRIMARY KEY (agent, resource)
   );
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    password_salt TEXT NOT NULL,
+    agent TEXT NOT NULL UNIQUE,
+    private_key TEXT NOT NULL,
+    codename TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL
+  );
 `;
 
 export class Book {
@@ -148,6 +162,98 @@ export class Book {
       tx.kind === "genesis" ? null : tx.agent,
       tx.kind === "transfer" ? tx.to : null,
       JSON.stringify(block),
+    );
+  }
+
+  user(username: string) {
+    return (
+      this.sql
+        .exec<{
+          id: number;
+          username: string;
+          password_hash: string;
+          password_salt: string;
+          agent: string;
+          private_key: string;
+          codename: string;
+        }>("SELECT * FROM users WHERE username = ?", username)
+        .toArray()[0] ?? null
+    );
+  }
+
+  addUser(user: {
+    username: string;
+    passwordHash: string;
+    passwordSalt: string;
+    agent: string;
+    privateKey: string;
+    codename: string;
+  }) {
+    this.sql.exec(
+      "INSERT INTO users (username, password_hash, password_salt, agent, private_key, codename) VALUES (?, ?, ?, ?, ?, ?)",
+      user.username,
+      user.passwordHash,
+      user.passwordSalt,
+      user.agent,
+      user.privateKey,
+      user.codename,
+    );
+    return this.user(user.username);
+  }
+
+  session(tokenHash: string, now: number) {
+    return (
+      this.sql
+        .exec<{
+          id: number;
+          username: string;
+          agent: string;
+          private_key: string;
+          codename: string;
+        }>(
+          `SELECT users.id, users.username, users.agent, users.private_key, users.codename
+       FROM sessions JOIN users ON users.id = sessions.user_id
+       WHERE sessions.token_hash = ? AND sessions.expires_at > ?`,
+          tokenHash,
+          now,
+        )
+        .toArray()[0] ?? null
+    );
+  }
+
+  addSession(tokenHash: string, userId: number, expiresAt: number) {
+    this.sql.exec(
+      "INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)",
+      tokenHash,
+      userId,
+      expiresAt,
+    );
+  }
+
+  removeSession(tokenHash: string) {
+    this.sql.exec("DELETE FROM sessions WHERE token_hash = ?", tokenHash);
+  }
+
+  renameUser(userId: number, newUsername: string) {
+    this.sql.exec(
+      "UPDATE users SET username = ? WHERE id = ?",
+      newUsername,
+      userId,
+    );
+  }
+  userById(userId: number) {
+    return (
+      this.sql
+        .exec<{
+          id: number;
+          username: string;
+          password_hash: string;
+          password_salt: string;
+          agent: string;
+          private_key: string;
+          codename: string;
+        }>("SELECT * FROM users WHERE id = ?", userId)
+        .toArray()[0] ?? null
     );
   }
 }

@@ -31,3 +31,5 @@ export const submissionSchema = z.strictObject({ tx: txSchema, signature: signat
 
 export type Tx = z.infer<typeof txSchema>;
 export type Submission = z.infer<typeof submissionSchema>;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+export type TxDraft = DistributiveOmit<Exclude<Tx, { kind: "enlist" }>, "agent" | "nonce" | "time">;

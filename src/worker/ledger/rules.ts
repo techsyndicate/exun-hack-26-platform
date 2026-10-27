@@ -1,11 +1,8 @@
-import { TRANSFER_HOLD_MINUTES, shortfall } from "../../shared/economy";
+import { shortfall } from "../../shared/economy";
 import type { Tx } from "../../shared/ledger/schema";
 import type { Book } from "./book";
 
-const minutesLeft = (until: number, now: number) =>
-  Math.ceil((until - now) / 60_000);
-
-export function rejection(tx: Tx, book: Book, now: number): string | null {
+export function rejection(tx: Tx, book: Book, _now: number): string | null {
   const agent = book.agent(tx.agent);
 
   if (tx.kind === "enlist") {
@@ -20,9 +17,6 @@ export function rejection(tx: Tx, book: Book, now: number): string | null {
   if (tx.nonce !== agent.nonce)
     return "This was signed out of order. Refresh and try again.";
 
-  const cleared = agent.joined + TRANSFER_HOLD_MINUTES * 60_000;
-  if (now < cleared)
-    return `New agents can send resources in ${minutesLeft(cleared, now)} more minutes.`;
   if (tx.to === tx.agent) return "You can't send resources to yourself.";
   if (!book.agent(tx.to)) return "No agent holds that key.";
   const held = book.balances(tx.agent);

@@ -1,18 +1,38 @@
 import { useEffect, useState } from "react";
-import { api } from "./api";
-import { unwrap } from "./request";
+import { HomePage } from "./pages/HomePage";
+import { LedgerPage } from "./pages/LedgerPage";
+import { AuthPage } from "./pages/AuthPage";
+import { AgentProvider, useAgentState } from "./identity/agent";
+import { AccountPage } from "./pages/AccountPage";
+
+function currentPath() {
+  return window.location.pathname;
+}
 
 export function App() {
-  const [height, setHeight] = useState<number | null>(null);
+  const [path, setPath] = useState(currentPath);
 
   useEffect(() => {
-    void unwrap(api.ledger.head.$get()).then((head) => setHeight(head?.height ?? null));
+    const handleNavigation = () => setPath(currentPath());
+    window.addEventListener("popstate", handleNavigation);
+    return () => window.removeEventListener("popstate", handleNavigation);
   }, []);
 
   return (
-    <main>
-      <h1>EXUN Underground</h1>
-      <p>{height === null ? "Connecting to the ledger" : `Ledger height ${height}`}</p>
-    </main>
+    <AgentProvider>
+      <AgentRoutes path={path} />
+    </AgentProvider>
   );
+}
+
+function AgentRoutes({ path }: { path: string }) {
+  const state = useAgentState();
+  if (state.status === "loading") return <p>Loading</p>;
+  if (state.status === "unsupported")
+    return <p>This browser cannot store a signing key.</p>;
+  if (state.status === "new")
+    return <AuthPage signup={state.signup} signin={state.signin} />;
+  if (path === "/ledger") return <LedgerPage />;
+  if (path === "/account") return <AccountPage />;
+  return <HomePage />;
 }
