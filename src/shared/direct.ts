@@ -7,7 +7,10 @@ export const REPLACED_CODE = 4002;
 
 export const roomSchema = z
   .string()
-  .regex(/^[a-z0-9-]{2,24}$/, "Use 2 to 24 lowercase letters, numbers or dashes");
+  .regex(
+    /^[a-z0-9-]{2,24}$/,
+    "Use 2 to 24 lowercase letters, numbers or dashes",
+  );
 
 const joinSchema = z.strictObject({
   kind: z.literal("join"),
@@ -53,7 +56,6 @@ export type Join = z.infer<typeof joinSchema>;
 export type Signal = z.infer<typeof signalSchema>;
 export type Payload = Signal["payload"];
 export type DirectFrame = z.infer<typeof directFrameSchema>;
-// @ts-ignore
 export type Peer = { agent: string; codename: string };
 
 export type RoomFrame =
@@ -65,4 +67,7 @@ export type RoomFrame =
   | { type: "error"; error: string };
 
 export const isRoomFrame = (data: unknown): data is RoomFrame =>
-  typeof data === "object" && data !== null && "type" in data && typeof data.type === "string";
+  typeof data === "object" &&
+  data !== null &&
+  "type" in data &&
+  typeof data.type === "string";

@@ -27,7 +27,10 @@ export class SignalRoom extends DurableObject<Env> {
     }
     const room = new URL(request.url).pathname.split("/").at(-2) ?? "";
     const nonce = crypto.randomUUID();
-    const [client, server] = Object.values(new WebSocketPair()) as [WebSocket, WebSocket];
+    const [client, server] = Object.values(new WebSocketPair()) as [
+      WebSocket,
+      WebSocket,
+    ];
     this.ctx.acceptWebSocket(server);
     server.serializeAttachment({
       room,
@@ -38,10 +41,15 @@ export class SignalRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  override async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
+  override async webSocketMessage(
+    socket: WebSocket,
+    message: string | ArrayBuffer,
+  ) {
     const parsed = directFrameSchema.safeParse(parseFrame(message));
     if (!parsed.success)
-      return socket.send(frame({ type: "error", error: "That message was malformed." }));
+      return socket.send(
+        frame({ type: "error", error: "That message was malformed." }),
+      );
     const problem =
       parsed.data.type === "join"
         ? await this.join(socket, parsed.data)
@@ -52,7 +60,10 @@ export class SignalRoom extends DurableObject<Env> {
   override webSocketClose(socket: WebSocket) {
     if (socket.readyState === WebSocket.CLOSING) socket.close();
     const { peer } = socket.deserializeAttachment() as Attachment;
-    if (peer && !this.members().some((member) => member.peer.agent === peer.agent)) {
+    if (
+      peer &&
+      !this.members().some((member) => member.peer.agent === peer.agent)
+    ) {
       this.broadcast({ type: "left", agent: peer.agent });
     }
   }
@@ -71,12 +82,17 @@ export class SignalRoom extends DurableObject<Env> {
     const codename = await ledger(this.env).codename(join.agent);
     if (!codename) return "Enlist before joining a room.";
 
-    for (const member of this.members()) {
-      if (member.peer.agent === join.agent)
-        member.socket.close(REPLACED_CODE, "Joined from another tab");
-    }
-    const others = this.members().filter((member) => member.peer.agent !== join.agent);
+    const others = this.members().filter(
+      (member) => member.peer.agent !== join.agent,
+    );
     if (others.length >= ROOM_CAPACITY) return "This room is full.";
+    const replaced = this.members().filter(
+      (member) => member.peer.agent === join.agent,
+    );
+    for (const member of replaced)
+      member.socket.close(REPLACED_CODE, "Joined from another tab");
+    if (replaced.length > 0)
+      this.broadcast({ type: "left", agent: join.agent });
 
     const peer = { agent: join.agent, codename };
     socket.serializeAttachment({ ...attachment, peer } satisfies Attachment);
@@ -94,16 +110,21 @@ export class SignalRoom extends DurableObject<Env> {
       return "That signal wasn't yours to send.";
     if (!withinClockSkew(signal.time, Date.now()))
       return "Your device clock is off by more than five minutes.";
-    const targets = this.members().filter((member) => member.peer.agent === signal.to);
+    const targets = this.members().filter(
+      (member) => member.peer.agent === signal.to,
+    );
     if (targets.length === 0) return "That agent has left the room.";
-    for (const target of targets) target.socket.send(frame({ type: "signal", signal, signature }));
+    for (const target of targets)
+      target.socket.send(frame({ type: "signal", signal, signature }));
     return null;
   }
 
   private members() {
     return this.ctx.getWebSockets().flatMap((socket) => {
       const { peer } = socket.deserializeAttachment() as Attachment;
-      return peer && socket.readyState === WebSocket.OPEN ? [{ socket, peer }] : [];
+      return peer && socket.readyState === WebSocket.OPEN
+        ? [{ socket, peer }]
+        : [];
     });
   }
 
