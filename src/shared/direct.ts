@@ -50,6 +50,11 @@ export const directFrameSchema = z.discriminatedUnion("type", [
     signal: signalSchema,
     signature: signatureSchema,
   }),
+  z.strictObject({
+    type: z.literal("relay"),
+    to: z.array(agentIdSchema).min(1).max(ROOM_CAPACITY),
+    text: z.string().min(1).max(MESSAGE_MAX_LENGTH),
+  }),
 ]);
 
 export type Join = z.infer<typeof joinSchema>;
@@ -65,6 +70,7 @@ export type RoomFrame =
   | { type: "left"; agent: string }
   | { type: "ended"; agent: string }
   | { type: "signal"; signal: Signal; signature: string }
+  | { type: "relayed"; from: string; text: string }
   | { type: "error"; error: string };
 
 export const isRoomFrame = (data: unknown): data is RoomFrame =>

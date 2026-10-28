@@ -50,10 +50,10 @@ export class SignalRoom extends DurableObject<Env> {
       return socket.send(
         frame({ type: "error", error: "That message was malformed." }),
       );
-    const problem =
-      parsed.data.type === "join"
-        ? await this.join(socket, parsed.data)
-        : this.relay(socket, parsed.data);
+    let problem: string | null;
+    if (parsed.data.type === "join") problem = await this.join(socket, parsed.data);
+    else if (parsed.data.type === "signal") problem = this.relay(socket, parsed.data);
+    else problem = this.pass(socket, parsed.data);
     if (problem) socket.send(frame({ type: "error", error: problem }));
   }
 
@@ -115,6 +115,21 @@ export class SignalRoom extends DurableObject<Env> {
     if (targets.length === 0) return "That agent has left the room.";
     for (const target of targets)
       target.socket.send(frame({ type: "signal", signal, signature }));
+    return null;
+  }
+
+  private pass(
+    socket: WebSocket,
+    { to, text }: Extract<DirectFrame, { type: "relay" }>,
+  ) {
+    const { peer } = socket.deserializeAttachment() as Attachment;
+    if (!peer) return "Join the room first.";
+    const message = frame({ type: "relayed", from: peer.agent, text });
+    for (const member of this.members()) {
+      if (member.peer.agent !== peer.agent && to.includes(member.peer.agent)) {
+        member.socket.send(message);
+      }
+    }
     return null;
   }
 

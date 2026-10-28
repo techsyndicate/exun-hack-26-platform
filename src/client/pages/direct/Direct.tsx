@@ -32,12 +32,10 @@ function Room({ room }: { room: string }) {
       ? `${ended}. Reload to rejoin here.`
       : "Connecting to the room server.";
 
-  let hint = "The line is open. Say something.";
-  if (peers.length === 0) {
-    hint = `No other agent is here. Open another browser profile or device, sign in with a different account, and join #${room}.`;
-  } else if (open.size === 0) {
-    hint = "Another agent is here. Establishing a direct connection...";
-  }
+  const alone = peers.length === 0;
+  const hint = alone
+    ? `No other agent is here. Open another browser profile or device, sign in with a different account, and join #${room}.`
+    : "The line is open. Say something.";
 
   return (
     <div className="direct-room">
@@ -48,15 +46,12 @@ function Room({ room }: { room: string }) {
             <span className="direct-dot is-open" />
             {self.codename} <small>you</small>
           </li>
-          {peers.map((peer) => {
-            const isOpen = open.has(peer.agent);
-            return (
-              <li key={peer.agent}>
-                <span className={`direct-dot ${isOpen ? "is-open" : ""}`} />
-                {peer.codename} <small>{isOpen ? "connected" : "connecting"}</small>
-              </li>
-            );
-          })}
+          {peers.map((peer) => (
+            <li key={peer.agent}>
+              <span className="direct-dot is-open" />
+              {peer.codename} <small>{open.has(peer.agent) ? "direct" : "via server"}</small>
+            </li>
+          ))}
         </ul>
         <p className={`direct-status ${connected ? "" : "is-down"}`}>{status}</p>
       </aside>
@@ -77,10 +72,10 @@ function Room({ room }: { room: string }) {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             aria-label={`Message #${room}`}
-            placeholder={open.size === 0 ? "Waiting for another agent" : `Message #${room}`}
+            placeholder={alone ? "Waiting for another agent" : `Message #${room}`}
             maxLength={MESSAGE_MAX_LENGTH}
           />
-          <button disabled={!draft.trim() || open.size === 0}>Send</button>
+          <button disabled={!draft.trim() || alone || !connected}>Send</button>
         </form>
         {(problem ?? notice) && (
           <p className="direct-error" role="alert">
@@ -115,8 +110,8 @@ export function Direct() {
 
       <div className="ledger-section">
         <p>
-          Messages go straight between browsers over WebRTC. The server only introduces agents to
-          each other, and nothing is stored.
+          Messages go straight between browsers over WebRTC when they can, and through the room
+          server when they can't. Nothing is stored.
         </p>
       </div>
 

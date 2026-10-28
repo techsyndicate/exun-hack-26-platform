@@ -257,6 +257,13 @@ export function usePeers(room: string) {
       case "signal":
         await receive(frame);
         return;
+      case "relayed": {
+        const peer = roster.current.get(frame.from);
+        if (peer && frame.text.length <= MESSAGE_MAX_LENGTH) {
+          addLine(peer.codename, frame.text);
+        }
+        return;
+      }
       case "error":
         setProblem(frame.error);
         return;
@@ -272,12 +279,15 @@ export function usePeers(room: string) {
   }, []);
 
   const broadcast = (text: string) => {
-    let delivered = 0;
-    for (const { channel } of links.current.values()) {
-      if (channel?.readyState !== "open") continue;
-      channel.send(text);
-      delivered++;
+    const viaServer: string[] = [];
+    for (const agent of roster.current.keys()) {
+      const channel = links.current.get(agent)?.channel;
+      if (channel?.readyState === "open") channel.send(text);
+      else viaServer.push(agent);
     }
+    if (viaServer.length > 0) send({ type: "relay", to: viaServer, text });
+
+    const delivered = roster.current.size;
     if (delivered > 0) addLine(profile.codename, text);
     return delivered;
   };
