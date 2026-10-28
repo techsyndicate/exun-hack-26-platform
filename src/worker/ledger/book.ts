@@ -44,7 +44,7 @@ const SCHEMA = `
   );
 `;
 
-const WIPE = "2026-10-29";
+const WIPE = "2026-10-29-2";
 
 export class Book {
   constructor(private readonly sql: SqlStorage) {}
