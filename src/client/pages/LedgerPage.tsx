@@ -26,6 +26,7 @@ export function LedgerPage() {
   const [message, setMessage] = useState("");
   const [checking, setChecking] = useState(false);
   const [check, setCheck] = useState<ChainCheck | null>(null);
+  const [showAllBlocks, setShowAllBlocks] = useState(false);
 
   const load = useCallback(async () => {
     const [nextAgents, nextBlocks] = await Promise.all([
@@ -92,6 +93,7 @@ export function LedgerPage() {
     Number.isInteger(value) &&
     value > 0 &&
     value <= profile.balances[resource];
+  const visibleBlocks = showAllBlocks ? blocks : blocks.slice(0, 7);
 
   return (
     <div className="main">
@@ -213,8 +215,8 @@ export function LedgerPage() {
           </p>
         )}
       </div>
-      <div>
-        <h2>Blocks</h2>
+      <div className="ledger-blocks">
+        <h2 className="section-title">Blocks</h2>
         <table>
           <thead>
             <tr>
@@ -225,7 +227,7 @@ export function LedgerPage() {
             </tr>
           </thead>
           <tbody>
-            {blocks.map((block) => (
+            {visibleBlocks.map((block) => (
               <tr key={block.hash}>
                 <td>{block.height}</td>
                 <td>{block.tx.kind}</td>
@@ -237,6 +239,14 @@ export function LedgerPage() {
             ))}
           </tbody>
         </table>
+        {blocks.length > 7 && (
+          <button
+            className="view-more-button"
+            onClick={() => setShowAllBlocks((isExpanded) => !isExpanded)}
+          >
+            {showAllBlocks ? "View less" : "View more"}
+          </button>
+        )}
       </div>
     </div>
   );
