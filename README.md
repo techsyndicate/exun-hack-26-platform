@@ -1,4 +1,4 @@
-# EXUN Underground
+# Los Rebeldes
 
 Hono worker and Vite React client on Cloudflare Workers, with a signed, hash-chained ledger in a Durable Object.
 

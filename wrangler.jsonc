@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "exun-underground",
+  "name": "los-rebeldes",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2026-10-26",
   "upload_source_maps": true,

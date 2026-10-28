@@ -5,6 +5,7 @@ import { AuthPage } from "./pages/AuthPage";
 import { AgentProvider, useAgentState } from "./identity/agent";
 import { AccountPage } from "./pages/AccountPage";
 import { Direct } from "./pages/direct/Direct";
+import ArcadePage from "./pages/ArcadePage";
 
 function currentPath() {
   return window.location.pathname;
@@ -34,5 +35,6 @@ function AgentRoutes({ path }: { path: string }) {
   if (path === "/ledger") return <LedgerPage />;
   if (path === "/account") return <AccountPage />;
   if (path === "/direct") return <Direct />;
+  if (path === "/arcade") return <ArcadePage />;
   return <HomePage />;
 }
