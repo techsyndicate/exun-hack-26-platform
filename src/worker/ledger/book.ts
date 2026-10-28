@@ -39,7 +39,12 @@ const SCHEMA = `
     user_id INTEGER NOT NULL,
     expires_at INTEGER NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS wipes (
+    name TEXT PRIMARY KEY
+  );
 `;
+
+const WIPE = "2026-10-29";
 
 export class Book {
   constructor(private readonly sql: SqlStorage) {}
@@ -50,6 +55,17 @@ export class Book {
     if (!columns.some((column) => column.name === "avatar")) {
       this.sql.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
     }
+    this.wipe();
+  }
+
+  private wipe() {
+    const done = this.sql.exec("SELECT name FROM wipes WHERE name = ?", WIPE).toArray();
+    if (done.length > 0) return;
+
+    for (const table of ["sessions", "users", "balances", "agents", "blocks"]) {
+      this.sql.exec(`DELETE FROM ${table}`);
+    }
+    this.sql.exec("INSERT INTO wipes (name) VALUES (?)", WIPE);
   }
 
   head(): { height: number; hash: string } | null {
