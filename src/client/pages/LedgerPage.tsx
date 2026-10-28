@@ -95,7 +95,7 @@ export function LedgerPage() {
 
   return (
     <div className="main">
-      <div className="container">
+      <div className="ledger-container">
         <Navbar />
       </div>
 
@@ -109,80 +109,103 @@ export function LedgerPage() {
           one has tampered with it.
         </p>
       </div>
-      <p>
-        {RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(
-          ", ",
-        )}
-      </p>
-      <div>
-        <h2>Send resources</h2>
-        {others.length === 0 ? (
-          <p>No other agents have enlisted yet.</p>
-        ) : (
-          <form onSubmit={send}>
-            <label>
-              To{" "}
-              <select
-                value={to}
-                onChange={(event) => setTo(event.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Pick an agent
-                </option>
-                {others.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.codename}
+
+      <div className="ledger-section-2">
+        <div className="send-resources">
+          <h2 className="section-title">Send resources</h2>
+          {others.length === 0 ? (
+            <p>No other agents have enlisted yet.</p>
+          ) : (
+            <form className="send-resources-form" onSubmit={send}>
+              <div className="meow">
+                <label>To </label>
+                <select
+                  value={to}
+                  onChange={(event) => setTo(event.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    Pick an agent
                   </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Amount{" "}
-              <input
-                value={amount}
-                onChange={(event) =>
-                  setAmount(event.target.value.replace(/\D/g, ""))
-                }
-                inputMode="numeric"
-                required
-              />
-            </label>
-            <label>
-              Resource{" "}
-              <select
-                value={resource}
-                onChange={(event) =>
-                  setResource(event.target.value as Resource)
-                }
-              >
-                {RESOURCES.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </select>
-            </label>
-            <button disabled={!valid}>Sign and send</button>
-          </form>
-        )}
-        {message && <p role="status">{message}</p>}
-      </div>
-      <div>
-        <h2>Verify the chain</h2>
-        <p>
-          Download every block and check its hash, signature, links, and effects
-          in this browser.
-        </p>
-        <button onClick={() => void verify()} disabled={checking}>
-          {checking ? "Checking" : "Verify"}
-        </button>
-        {check?.ok && (
-          <p role="status">All {check.head.height + 1} blocks check out.</p>
-        )}
-        {check && !check.ok && (
-          <p role="alert">
-            Block {check.height} fails because {check.reason}.
+                  {others.map((agent) => (
+                    <option key={agent.id} value={agent.id}>
+                      {agent.codename}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <label>
+                Amount{" "}
+                <input
+                  value={amount}
+                  onChange={(event) =>
+                    setAmount(event.target.value.replace(/\D/g, ""))
+                  }
+                  inputMode="numeric"
+                  required
+                />
+              </label>
+
+              <div className="">
+                <label>Resource </label>
+                <div className="resource-selector">
+                  <div
+                    className={`resource-selection ${
+                      resource === "credits" ? "selected" : ""
+                    }`}
+                    onClick={() => setResource("credits")}
+                  >
+                    Credits
+                  </div>
+                  <div
+                    className={`resource-selection ${
+                      resource === "alloy" ? "selected" : ""
+                    }`}
+                    onClick={() => setResource("alloy")}
+                  >
+                    Alloy
+                  </div>
+                  <div
+                    className={`resource-selection ${
+                      resource === "verdant" ? "selected" : ""
+                    }`}
+                    onClick={() => setResource("verdant")}
+                  >
+                    Verdant
+                  </div>
+                </div>
+              </div>
+              <button disabled={!valid}>Sign and send</button>
+            </form>
+          )}
+          {message && <p role="status">{message}</p>}
+        </div>
+        <div className="balances">
+          <h2 className="section-title">Balances</h2>
+          <p>
+            {RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(
+              ", ",
+            )}
           </p>
-        )}
+          <div>
+            <h2 className="section-title">Verify the chain</h2>
+            <p>
+              Download every block and check its hash, signature, links, and
+              effects in this browser.
+            </p>
+            <button onClick={() => void verify()} disabled={checking}>
+              {checking ? "Checking" : "Verify"}
+            </button>
+            {check?.ok && (
+              <p role="status">All {check.head.height + 1} blocks check out.</p>
+            )}
+            {check && !check.ok && (
+              <p role="alert">
+                Block {check.height} fails because {check.reason}.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
       <div>
         <h2>Blocks</h2>

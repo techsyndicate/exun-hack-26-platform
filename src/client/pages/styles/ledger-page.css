@@ -1,4 +1,4 @@
-.container {
+.ledger-container {
   background-color: var(--color-bg);
   color: var(--color-pri);
   width: 100%;
@@ -29,4 +29,93 @@
   margin-bottom: 1rem;
   padding: 0 6vw;
   text-align: center;
+}
+
+.ledger-section-2 {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+  margin-top: 5vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.send-resources {
+  flex: 0.5;
+  padding: 0 4vw;
+  gap: 2vh;
+}
+
+.send-resources-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+}
+
+.send-resources-form input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-accent);
+  outline: none;
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 50%;
+}
+
+.meow > select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-accent);
+  outline: none;
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 50%;
+  font-family: "Optimus Princeps", Courier, monospace;
+}
+
+.balances {
+  flex: 0.5;
+}
+
+.section-title {
+  font-size: 1.7vw;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: var(--color-accent);
+}
+
+.resource-selector {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 2vw;
+}
+
+.resource-selection {
+  padding: 0.7vw 0.9vw;
+  border: 1px var(--color-accent) solid;
+  cursor: pointer;
+}
+
+.resource-selection:hover {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  transition: 0.3s ease-in-out;
+}
+
+.selected {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.send-resources-form button {
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-family: "Optimus Princeps", Courier, monospace;
+  border: 1px solid var(--color-accent);
+  outline: none;
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 50%;
+  cursor: pointer;
 }

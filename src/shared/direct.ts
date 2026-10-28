@@ -63,6 +63,7 @@ export type RoomFrame =
   | { type: "peers"; peers: Peer[] }
   | { type: "joined"; peer: Peer }
   | { type: "left"; agent: string }
+  | { type: "ended"; agent: string }
   | { type: "signal"; signal: Signal; signature: string }
   | { type: "error"; error: string };
 

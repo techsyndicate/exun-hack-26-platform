@@ -35,14 +35,22 @@ export function usePeers(room: string) {
   const links = useRef(new Map<string, Link>());
   const roster = useRef(new Map<string, Peer>());
   const nextLine = useRef(0);
+  const inbox = useRef(Promise.resolve());
+  const outbox = useRef(Promise.resolve());
 
-  const setRoster = useCallback((update: (current: Map<string, Peer>) => void) => {
-    update(roster.current);
-    setPeers([...roster.current.values()]);
-  }, []);
+  const setRoster = useCallback(
+    (update: (current: Map<string, Peer>) => void) => {
+      update(roster.current);
+      setPeers([...roster.current.values()]);
+    },
+    [],
+  );
 
   const addLine = useCallback((from: string, text: string) => {
-    setLines((current) => [...current, { id: nextLine.current++, from, text, time: Date.now() }]);
+    setLines((current) => [
+      ...current,
+      { id: nextLine.current++, from, text, time: Date.now() },
+    ]);
   }, []);
 
   const setChannelOpen = useCallback((agent: string, isOpen: boolean) => {
@@ -59,23 +67,33 @@ export function usePeers(room: string) {
     [keys.id],
   );
 
-  const drop = useCallback(
+  const unlink = useCallback(
     (agent: string) => {
       links.current.get(agent)?.pc.close();
       links.current.delete(agent);
       setChannelOpen(agent, false);
-      setRoster((current) => current.delete(agent));
     },
-    [setChannelOpen, setRoster],
+    [setChannelOpen],
   );
 
-  const { connected, send } = useLiveSocket(directSocket(room), {
+  const drop = useCallback(
+    (agent: string) => {
+      unlink(agent);
+      setRoster((current) => current.delete(agent));
+    },
+    [unlink, setRoster],
+  );
+
+  const { connected, ended, send } = useLiveSocket(directSocket(room), {
     onMessage: (data) => {
-      if (isRoomFrame(data)) void handle(data);
+      if (!isRoomFrame(data)) return;
+      inbox.current = inbox.current
+        .then(() => handle(data))
+        .catch(() => undefined);
     },
   });
 
-  const signal = async (to: string, payload: Payload) => {
+  const signal = (to: string, payload: Payload) => {
     const message: Signal = {
       kind: "signal",
       room,
@@ -84,25 +102,47 @@ export function usePeers(room: string) {
       time: Date.now(),
       payload,
     };
-    send({
-      type: "signal",
-      signal: message,
-      signature: await sign(keys, message),
-    });
+    outbox.current = outbox.current
+      .then(async () => {
+        send({
+          type: "signal",
+          signal: message,
+          signature: await sign(keys, message),
+        });
+      })
+      .catch(() => undefined);
+    return outbox.current;
+  };
+
+  const isCurrent = (link: Link) => links.current.get(link.peer.agent) === link;
+
+  const relink = (link: Link) => {
+    if (!isCurrent(link)) return;
+    unlink(link.peer.agent);
+    if (shouldInitiate(link.peer.agent)) connect(link.peer, true);
   };
 
   const attach = (link: Link, channel: RTCDataChannel) => {
     link.channel = channel;
-    channel.addEventListener("open", () => setChannelOpen(link.peer.agent, true));
-    channel.addEventListener("close", () => setChannelOpen(link.peer.agent, false));
+    channel.addEventListener("open", () => {
+      if (isCurrent(link)) setChannelOpen(link.peer.agent, true);
+    });
+    channel.addEventListener("close", () => {
+      if (isCurrent(link)) setChannelOpen(link.peer.agent, false);
+    });
+
     channel.addEventListener("message", (event) => {
-      if (typeof event.data !== "string" || event.data.length > MESSAGE_MAX_LENGTH) return;
+      if (
+        typeof event.data !== "string" ||
+        event.data.length > MESSAGE_MAX_LENGTH
+      )
+        return;
       addLine(link.peer.codename, event.data);
     });
   };
 
   const connect = (peer: Peer, initiator: boolean) => {
-    links.current.get(peer.agent)?.pc.close();
+    unlink(peer.agent);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const link: Link = {
       peer,
@@ -122,7 +162,7 @@ export function usePeers(room: string) {
       });
     });
     pc.addEventListener("connectionstatechange", () => {
-      if (pc.connectionState === "failed") drop(peer.agent);
+      if (pc.connectionState === "failed") relink(link);
     });
     if (initiator) {
       attach(link, pc.createDataChannel("chat"));
@@ -131,7 +171,9 @@ export function usePeers(room: string) {
         await signal(peer.agent, { type: "offer", sdp: offer.sdp ?? "" });
       });
     } else {
-      pc.addEventListener("datachannel", (event) => attach(link, event.channel));
+      pc.addEventListener("datachannel", (event) =>
+        attach(link, event.channel),
+      );
     }
     return link;
   };
@@ -145,7 +187,9 @@ export function usePeers(room: string) {
       return;
     }
     await pc.setRemoteDescription({ type: payload.type, sdp: payload.sdp });
-    await Promise.all(link.pending.splice(0).map((candidate) => pc.addIceCandidate(candidate)));
+    await Promise.all(
+      link.pending.splice(0).map((candidate) => pc.addIceCandidate(candidate)),
+    );
     if (payload.type === "offer") {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
@@ -162,14 +206,18 @@ export function usePeers(room: string) {
     const known = links.current.get(message.from);
     const peer = known?.peer ?? roster.current.get(message.from);
     if (!peer) return;
-    const link = message.payload.type === "offer" ? connect(peer, false) : known;
+    const link =
+      message.payload.type === "offer" ? connect(peer, false) : known;
     if (!link) return;
-    link.queue = link.queue.then(() => accept(link, message.payload)).catch(() => drop(peer.agent));
+    link.queue = link.queue
+      .then(() => accept(link, message.payload))
+      .catch(() => relink(link));
   };
 
   async function handle(frame: RoomFrame) {
     switch (frame.type) {
       case "challenge": {
+        for (const agent of links.current.keys()) unlink(agent);
         const join: Join = {
           kind: "join",
           agent: keys.id,
@@ -179,17 +227,12 @@ export function usePeers(room: string) {
         send({ type: "join", join, signature: await sign(keys, join) });
         return;
       }
-      case "peers":
+      case "peers": {
+        const present = new Set(frame.peers.map((peer) => peer.agent));
+        for (const agent of roster.current.keys()) {
+          if (!present.has(agent)) drop(agent);
+        }
         setRoster((current) => {
-          const nextAgents = new Set(frame.peers.map((peer) => peer.agent));
-          for (const agent of current.keys()) {
-            if (!nextAgents.has(agent)) {
-              links.current.get(agent)?.pc.close();
-              links.current.delete(agent);
-              setChannelOpen(agent, false);
-              current.delete(agent);
-            }
-          }
           for (const peer of frame.peers) current.set(peer.agent, peer);
         });
         for (const peer of frame.peers) {
@@ -198,9 +241,13 @@ export function usePeers(room: string) {
           }
         }
         return;
+      }
       case "joined":
         setRoster((current) => current.set(frame.peer.agent, frame.peer));
-        if (shouldInitiate(frame.peer.agent) && !links.current.has(frame.peer.agent)) {
+        if (
+          shouldInitiate(frame.peer.agent) &&
+          !links.current.has(frame.peer.agent)
+        ) {
           connect(frame.peer, true);
         }
         return;
@@ -235,5 +282,14 @@ export function usePeers(room: string) {
     return delivered;
   };
 
-  return { connected, self: { agent: keys.id, codename: profile.codename }, peers, open, lines, problem, broadcast };
+  return {
+    connected,
+    ended,
+    self: { agent: keys.id, codename: profile.codename },
+    peers,
+    open,
+    lines,
+    problem,
+    broadcast,
+  };
 }
