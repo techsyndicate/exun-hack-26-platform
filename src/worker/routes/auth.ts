@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { signatureSchema, agentIdSchema } from "../../shared/ids";
-import { fromBase64Url } from "../../shared/encoding";
 import {
   clearSessionCookie,
   createSession,
@@ -46,7 +45,7 @@ function tokenFromCookie(header: string | undefined) {
 }
 
 async function matches(passwordText: string, hash: string, salt: string) {
-  return (await hashPassword(passwordText, fromBase64Url(salt))).hash === hash;
+  return (await hashPassword(passwordText, salt)).hash === hash;
 }
 
 async function authenticatedUser(c: Context) {
@@ -64,6 +63,7 @@ export const authRoutes = new Hono<{ Bindings: Env }>()
       return c.json({ error: "That username is already taken." }, 409);
     if (await book.agent(input.agent))
       return c.json({ error: "That agent key is already enlisted." }, 409);
+    const credentials = await hashPassword(input.password);
     const result = await book.submit({
       tx: {
         kind: "enlist",
@@ -75,7 +75,6 @@ export const authRoutes = new Hono<{ Bindings: Env }>()
       signature: input.signature,
     });
     if (!result.ok) return c.json({ error: result.error }, 409);
-    const credentials = await hashPassword(input.password);
     const user = await book.addUser({
       username: input.username,
       passwordHash: credentials.hash,

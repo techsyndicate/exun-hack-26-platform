@@ -1,6 +1,5 @@
-import { sha256Hex, toBase64Url, utf8 } from "../shared/encoding";
+import { sha256Hex, toBase64Url } from "../shared/encoding";
 
-const ITERATIONS = 120_000;
 const SESSION_DAYS = 30;
 
 function randomBytes(length: number) {
@@ -9,23 +8,8 @@ function randomBytes(length: number) {
   return bytes;
 }
 
-export async function hashPassword(password: string, salt = randomBytes(16)) {
-  const key = await crypto.subtle.importKey("raw", utf8(password), "PBKDF2", false, ["deriveBits"]);
-  const saltBuffer = salt.buffer.slice(
-    salt.byteOffset,
-    salt.byteOffset + salt.byteLength,
-  ) as ArrayBuffer;
-  const bits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: saltBuffer,
-      iterations: ITERATIONS,
-      hash: "SHA-256",
-    },
-    key,
-    256,
-  );
-  return { hash: toBase64Url(new Uint8Array(bits)), salt: toBase64Url(salt) };
+export async function hashPassword(password: string, salt = toBase64Url(randomBytes(16))) {
+  return { hash: await sha256Hex(`${salt}:${password}`), salt };
 }
 
 export async function createSession() {
