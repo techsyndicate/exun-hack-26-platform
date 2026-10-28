@@ -35,21 +35,37 @@
   background-color: #000;
   color: #fff;
   width: 100%;
-  margin-top: 5vh;
+  margin-top: 15vh;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-resources {
-  flex: 0.5;
-  padding: 0 4vw;
+  /* padding: 0 4vw; */
   gap: 2vh;
+  width: min(70%, 32rem);
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-resources-form {
   display: flex;
   flex-direction: column;
+  /* width: %; */
+  width: 100%;
+  max-width: 100%;
   gap: 2vh;
+  /* background-color: var(--color-accent); */
+}
+
+.send-resources-form > label,
+.send-resources-form > div {
+  width: 100%;
 }
 
 .send-resources-form input {
@@ -59,7 +75,8 @@
   outline: none;
   background-color: var(--color-bg);
   color: var(--color-pri);
-  width: 50%;
+  /* width: 50%; */
+  width: 100%;
 }
 
 .meow > select {
@@ -69,7 +86,7 @@
   outline: none;
   background-color: var(--color-bg);
   color: var(--color-pri);
-  width: 50%;
+  width: 100%;
   font-family: "Optimus Princeps", Courier, monospace;
 }
 
@@ -86,9 +103,11 @@
 
 .resource-selector {
   display: flex;
-  width: 100%;
+  max-width: 100%;
   flex-direction: row;
-  gap: 2vw;
+  /* justify-content: space-evenly; */
+  gap: 3.3vw;
+  flex-wrap: wrap;
 }
 
 .resource-selection {
@@ -114,8 +133,28 @@
   font-family: "Optimus Princeps", Courier, monospace;
   border: 1px solid var(--color-accent);
   outline: none;
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  width: 100%;
+  cursor: pointer;
+}
+
+.balances {
+  margin-top: 10vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.balances button {
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-family: "Optimus Princeps", Courier, monospace;
+  border: 1px solid var(--color-accent);
+  outline: none;
   background-color: var(--color-bg);
   color: var(--color-pri);
-  width: 50%;
   cursor: pointer;
 }

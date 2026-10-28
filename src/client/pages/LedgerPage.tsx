@@ -111,6 +111,17 @@ export function LedgerPage() {
       </div>
 
       <div className="ledger-section-2">
+        <div
+          className="balance"
+          style={{ position: "relative", top: "-1vh", right: "-27.5vw" }}
+        >
+          <h2 style={{ textAlign: "end", marginBottom: "-1vh" }}>Balance</h2>
+          <p>
+            {RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(
+              ", ",
+            )}
+          </p>
+        </div>
         <div className="send-resources">
           <h2 className="section-title">Send resources</h2>
           {others.length === 0 ? (
@@ -180,32 +191,27 @@ export function LedgerPage() {
           )}
           {message && <p role="status">{message}</p>}
         </div>
-        <div className="balances">
-          <h2 className="section-title">Balances</h2>
-          <p>
-            {RESOURCES.map((item) => `${item}: ${profile.balances[item]}`).join(
-              ", ",
-            )}
+      </div>
+
+      <div className="balances">
+        <h2 className="section-title" style={{ marginBottom: "-1vh" }}>
+          Verify the chain
+        </h2>
+        <p>
+          Download every block and check its hash, signature, links, and effects
+          in this browser.
+        </p>
+        <button onClick={() => void verify()} disabled={checking}>
+          {checking ? "Checking" : "Verify"}
+        </button>
+        {check?.ok && (
+          <p role="status">All {check.head.height + 1} blocks check out.</p>
+        )}
+        {check && !check.ok && (
+          <p role="alert">
+            Block {check.height} fails because {check.reason}.
           </p>
-          <div>
-            <h2 className="section-title">Verify the chain</h2>
-            <p>
-              Download every block and check its hash, signature, links, and
-              effects in this browser.
-            </p>
-            <button onClick={() => void verify()} disabled={checking}>
-              {checking ? "Checking" : "Verify"}
-            </button>
-            {check?.ok && (
-              <p role="status">All {check.head.height + 1} blocks check out.</p>
-            )}
-            {check && !check.ok && (
-              <p role="alert">
-                Block {check.height} fails because {check.reason}.
-              </p>
-            )}
-          </div>
-        </div>
+        )}
       </div>
       <div>
         <h2>Blocks</h2>
