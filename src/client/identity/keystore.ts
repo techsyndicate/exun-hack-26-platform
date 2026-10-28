@@ -1,11 +1,12 @@
 import { canonical, type Json } from "../../shared/canonical";
 import { fromBase64Url, toBase64Url, utf8 } from "../../shared/encoding";
 import { SIGNING_ALGORITHM } from "../../shared/signature";
-import { readSlot, writeSlot } from "../idb";
+import { clearSlot, readSlot, writeSlot } from "../idb";
 
 export type Keys = { readonly id: string; readonly privateKey: CryptoKey };
 
 export const loadKeys = () => readSlot<Keys>("agent");
+export const forgetKeys = () => clearSlot("agent");
 
 export async function createKeys(): Promise<Keys> {
   const pair = (await crypto.subtle.generateKey(SIGNING_ALGORITHM, true, [

@@ -108,6 +108,10 @@ export class Ledger extends DurableObject<Env> {
     this.book.renameUser(userId, newUsername);
   }
 
+  setAvatar(userId: number, avatar: string | null) {
+    this.book.setAvatar(userId, avatar);
+  }
+
   private async process({ tx, signature }: Submission): Promise<SubmitResult> {
     const now = Date.now();
     if (!withinClockSkew(tx.time, now)) {

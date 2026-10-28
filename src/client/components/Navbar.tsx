@@ -1,6 +1,8 @@
-import React from "react";
+import { DEFAULT_AVATAR, useMe } from "../me";
 
 function Navbar() {
+  const me = useMe();
+
   return (
     <nav className="navbar" aria-label="Main navigation">
       <div className="left">
@@ -27,7 +29,7 @@ function Navbar() {
       </div>
       <div className="right">
         <a href="/account" aria-label="Open account">
-          <img src="/assets/home/profile.png" alt="" />
+          <img src={me?.avatar ?? DEFAULT_AVATAR} alt="" />
         </a>
       </div>
     </nav>

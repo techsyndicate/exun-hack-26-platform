@@ -46,6 +46,10 @@ export class Book {
 
   migrate() {
     this.sql.exec(SCHEMA);
+    const columns = this.sql.exec<{ name: string }>("PRAGMA table_info(users)").toArray();
+    if (!columns.some((column) => column.name === "avatar")) {
+      this.sql.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
+    }
   }
 
   head(): { height: number; hash: string } | null {
@@ -201,8 +205,9 @@ export class Book {
           agent: string;
           private_key: string;
           codename: string;
+          avatar: string | null;
         }>(
-          `SELECT users.id, users.username, users.agent, users.private_key, users.codename
+          `SELECT users.id, users.username, users.agent, users.private_key, users.codename, users.avatar
        FROM sessions JOIN users ON users.id = sessions.user_id
        WHERE sessions.token_hash = ? AND sessions.expires_at > ?`,
           tokenHash,
@@ -228,6 +233,11 @@ export class Book {
   renameUser(userId: number, newUsername: string) {
     this.sql.exec("UPDATE users SET username = ? WHERE id = ?", newUsername, userId);
   }
+
+  setAvatar(userId: number, avatar: string | null) {
+    this.sql.exec("UPDATE users SET avatar = ? WHERE id = ?", avatar, userId);
+  }
+
   userById(userId: number) {
     return (
       this.sql

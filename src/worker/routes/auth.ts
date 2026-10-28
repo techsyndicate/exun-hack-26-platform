@@ -35,6 +35,13 @@ const signup = z.object({
 });
 const signin = z.object({ username, password });
 const renameUsername = z.object({ newUsername: username });
+const avatar = z.object({
+  avatar: z
+    .string()
+    .max(300_000)
+    .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/)
+    .nullable(),
+});
 
 function tokenFromCookie(header: string | undefined) {
   return header
@@ -124,8 +131,16 @@ export const authRoutes = new Hono<{ Bindings: Env }>()
           username: user.username,
           agent: user.agent,
           codename: user.codename,
+          avatar: user.avatar,
         })
       : c.json({ user: null });
+  })
+  .put("/avatar", validate("json", avatar), async (c) => {
+    const user = await authenticatedUser(c);
+    if (!user) return c.json({ error: "User not logged in." }, 401);
+
+    await ledger(c.env).setAvatar(user.id, c.req.valid("json").avatar);
+    return c.json({ ok: true });
   })
   .patch("/username", validate("json", renameUsername), async (c) => {
     const user = await authenticatedUser(c);

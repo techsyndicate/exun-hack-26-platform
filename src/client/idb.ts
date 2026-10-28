@@ -27,3 +27,4 @@ export const readSlot = <T>(slot: string) =>
   run<T | undefined>("readonly", (store) => store.get(slot));
 export const writeSlot = (slot: string, value: unknown) =>
   run("readwrite", (store) => store.put(value, slot));
+export const clearSlot = (slot: string) => run("readwrite", (store) => store.delete(slot));

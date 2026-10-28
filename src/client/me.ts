@@ -1,0 +1,45 @@
+import { useEffect, useSyncExternalStore } from "react";
+
+export type Me = {
+  username: string;
+  agent: string;
+  codename: string;
+  avatar: string | null;
+};
+
+export const DEFAULT_AVATAR = "/assets/home/profile.png";
+
+let me: Me | null | undefined;
+let loading: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function setMe(next: Me | null) {
+  me = next;
+  listeners.forEach((listener) => listener());
+}
+
+export function loadMe() {
+  loading ??= fetch("/api/auth/me")
+    .then((response) => response.json() as Promise<Me | { user: null }>)
+    .then((data) => setMe("username" in data ? data : null))
+    .catch(() => setMe(null))
+    .finally(() => {
+      loading = null;
+    });
+  return loading;
+}
+
+export function useMe() {
+  const current = useSyncExternalStore(subscribe, () => me);
+
+  useEffect(() => {
+    if (me === undefined) void loadMe();
+  }, []);
+
+  return current;
+}
