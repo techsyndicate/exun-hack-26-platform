@@ -1,0 +1,263 @@
+.direct-container {
+  background-color: var(--color-bg);
+  color: var(--color-pri);
+  width: 100%;
+  min-height: 100vh;
+  background-image: url("/assets/direct/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.direct-section {
+  width: min(90%, 68rem);
+  margin: 12vh auto 0;
+  padding-bottom: 14vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  scroll-margin-top: 4vh;
+}
+
+.direct-section .section-title {
+  font-size: max(1.7vw, 1.4rem);
+  color: #e0a653;
+  text-align: center;
+}
+
+.direct-section input {
+  display: block;
+  max-width: none;
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 0;
+  outline: none;
+  background-color: var(--color-bg);
+  color: #fff;
+}
+
+.direct-section input::placeholder {
+  color: #7a6a55;
+}
+
+.direct-section input:focus {
+  border-color: #e0a653;
+}
+
+.direct-section button {
+  margin: 0;
+  padding: 0.5rem 1.4rem;
+  font-size: 1rem;
+  font-family: "Optimus Princeps", Courier, monospace;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.direct-section button:hover:not(:disabled) {
+  background-color: #e0a653;
+}
+
+.direct-section button:disabled {
+  background-color: transparent;
+  color: #7a6a55;
+  border-color: #4d3621;
+  cursor: not-allowed;
+}
+
+.direct-join {
+  display: flex;
+  gap: 1rem;
+  width: min(100%, 26rem);
+  margin-bottom: 4vh;
+}
+
+.direct-join input {
+  flex: 1;
+  min-width: 0;
+}
+
+.direct-join button {
+  background-color: var(--color-bg);
+  color: #fff;
+}
+
+.direct-join button:hover:not(:disabled) {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.direct-room {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  width: 100%;
+  border: 1px solid #4d3621;
+  color: #eadcc8;
+}
+
+.direct-agents {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border-right: 1px solid #4d3621;
+}
+
+.direct-agents h3 {
+  margin: 0 0 1rem;
+  color: #f0b968;
+  font-weight: 600;
+}
+
+.direct-agents ul {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.direct-agents li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  overflow-wrap: anywhere;
+}
+
+.direct-agents small {
+  margin-left: auto;
+  color: #7a6a55;
+  font-size: 0.75rem;
+}
+
+.direct-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid #7a6a55;
+  transform: rotate(45deg);
+}
+
+.direct-dot.is-open {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+}
+
+.direct-status {
+  margin: 1.5rem 0 0;
+  font-size: 0.8rem;
+  color: #7a6a55;
+}
+
+.direct-status.is-down {
+  color: #b8752a;
+}
+
+.direct-chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.direct-log {
+  height: 55vh;
+  min-height: 18rem;
+  margin: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.direct-log li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 75%;
+  align-self: flex-start;
+  padding: 0.6rem 0.9rem;
+  border-left: 2px solid #4d3621;
+}
+
+.direct-log li.is-self {
+  align-self: flex-end;
+  text-align: right;
+  border-left: none;
+  border-right: 2px solid var(--color-accent);
+}
+
+.direct-log li.direct-empty {
+  max-width: 28rem;
+  margin: auto;
+  align-self: center;
+  border: none;
+  text-align: center;
+  color: #7a6a55;
+}
+
+.direct-from {
+  color: #e0a653;
+  font-size: 0.85rem;
+}
+
+.direct-text {
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.direct-log small {
+  color: #7a6a55;
+  font-size: 0.7rem;
+}
+
+.direct-send {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #4d3621;
+}
+
+.direct-send input {
+  flex: 1;
+  min-width: 0;
+}
+
+.direct-error {
+  margin: 0;
+  padding: 0 1.5rem 1rem;
+  color: #e07a53;
+}
+
+.direct-join + .direct-error {
+  margin: -2vh 0 3vh;
+  padding: 0;
+}
+
+@media (max-width: 700px) {
+  .direct-room {
+    grid-template-columns: 1fr;
+  }
+
+  .direct-agents {
+    border-right: none;
+    border-bottom: 1px solid #4d3621;
+    padding: 1rem;
+  }
+
+  .direct-log {
+    padding: 1rem;
+  }
+
+  .direct-log li {
+    max-width: 90%;
+  }
+
+  .direct-send {
+    padding: 1rem;
+  }
+}

@@ -43,7 +43,6 @@
 }
 
 .send-resources {
-  /* padding: 0 4vw; */
   gap: 2vh;
   width: min(70%, 32rem);
   max-width: 100%;
@@ -56,11 +55,9 @@
 .send-resources-form {
   display: flex;
   flex-direction: column;
-  /* width: %; */
   width: 100%;
   max-width: 100%;
   gap: 2vh;
-  /* background-color: var(--color-accent); */
 }
 
 .send-resources-form > label,
@@ -75,7 +72,6 @@
   outline: none;
   background-color: var(--color-bg);
   color: var(--color-pri);
-  /* width: 50%; */
   width: 100%;
 }
 
@@ -105,7 +101,6 @@
   display: flex;
   max-width: 100%;
   flex-direction: row;
-  /* justify-content: space-evenly; */
   gap: 3.3vw;
   flex-wrap: wrap;
 }

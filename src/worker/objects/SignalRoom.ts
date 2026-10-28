@@ -78,7 +78,6 @@ export class SignalRoom extends DurableObject<Env> {
       return "That join was for another room.";
     if (!(await verifySignature(join.agent, join, signature)))
       return "The signature doesn't match your key.";
-    // @ts-ignore
     const codename = await ledger(this.env).codename(join.agent);
     if (!codename) return "Enlist before joining a room.";
 

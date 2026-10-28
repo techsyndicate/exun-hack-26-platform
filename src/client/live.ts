@@ -42,7 +42,7 @@ export function useLiveSocket(url: string | null, handlers: Handlers) {
         try {
           latest.current.onMessage(JSON.parse(event.data) as unknown);
         } catch {
-          // Ignore malformed server frames and keep the connection alive.
+          return;
         }
       });
       ws.addEventListener("close", (event) => {
