@@ -1,0 +1,123 @@
+.auth-banner {
+  width: 100%;
+  height: 55vh;
+  min-height: 300px;
+  background-color: var(--color-bg);
+  background-image: url("/assets/home/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.auth {
+  width: min(90%, 26rem);
+  margin: 6vh auto 0;
+  padding-bottom: 12vh;
+  color: #fff;
+}
+
+.auth button {
+  margin: 0;
+  font-family: "Optimus Princeps", Courier, monospace;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 1rem;
+}
+
+.auth-tabs button {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-bg);
+  color: #fff;
+  transition: 0.3s ease-in-out;
+}
+
+.auth-tabs button:hover,
+.auth-tabs button.selected {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.auth-intro {
+  margin: 2rem 0;
+  text-align: center;
+  line-height: 1.5;
+  color: #eadcc8;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.auth-form label {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #e0a653;
+}
+
+.auth-form input {
+  max-width: none;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 0;
+  outline: none;
+  background-color: var(--color-bg);
+  color: #fff;
+}
+
+.auth-form input:focus {
+  border-color: #f0b968;
+}
+
+.auth-form small {
+  color: #a08c70;
+  font-size: 0.8rem;
+}
+
+.auth-form button {
+  margin-top: 0.6rem;
+  padding: 0.7rem;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.auth-form button:hover {
+  background-color: #e0a653;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.auth-error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 2px solid #e07a53;
+  color: #e07a53;
+}
+
+.auth-switch {
+  margin-top: 2rem;
+  text-align: center;
+  color: #eadcc8;
+}
+
+.auth-switch button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #e0a653;
+  text-decoration: underline;
+}
