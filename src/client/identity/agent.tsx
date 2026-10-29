@@ -16,6 +16,7 @@ import {
   sign,
   type Keys,
 } from "./keystore";
+import { loadMe } from "../me";
 
 type Profile = {
   id: string;
@@ -110,6 +111,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         throw new Error(responseError(body, response.status, "Could not create the account."));
       }
+      await loadMe();
       setKeys(owned);
       setAgent(await profile(owned.id));
     },
@@ -135,6 +137,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
       throw new Error(responseError(body, response.status, "Could not sign in."));
     }
     const owned = await importPrivateKey(body.agent, body.privateKey);
+    await loadMe();
     setKeys(owned);
     setAgent(await profile(owned.id));
   }, []);

@@ -10,6 +10,13 @@ const codenameSchema = z
     "Use 2 to 16 letters, numbers, spaces or dashes, starting with a letter",
   );
 
+export const verificationEntrySchema = z.strictObject({
+  exuniteCode: z.number().int().min(0),
+  details: z.string().trim().min(1).max(2_000),
+});
+
+export type VerificationEntry = z.infer<typeof verificationEntrySchema>;
+
 const base = {
   agent: agentIdSchema,
   nonce: z.number().int().min(0),

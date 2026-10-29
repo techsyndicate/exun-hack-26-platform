@@ -1,7 +1,15 @@
 import { RESOURCES, type Resource } from "../../shared/economy";
 import type { Block, Delta } from "../../shared/ledger/block";
+import type { VerificationEntry } from "../../shared/ledger/schema";
+import type { Role } from "../../shared/roles";
 
-type AgentRow = { id: string; codename: string; joined: number; nonce: number };
+type AgentRow = {
+  id: string;
+  codename: string;
+  joined: number;
+  nonce: number;
+  role: Role;
+};
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS blocks (
@@ -17,7 +25,8 @@ const SCHEMA = `
     id TEXT PRIMARY KEY,
     codename TEXT NOT NULL UNIQUE COLLATE NOCASE,
     joined INTEGER NOT NULL,
-    nonce INTEGER NOT NULL
+    nonce INTEGER NOT NULL,
+    role TEXT NOT NULL DEFAULT 'unverified'
   );
   CREATE TABLE IF NOT EXISTS balances (
     agent TEXT NOT NULL,
@@ -32,7 +41,9 @@ const SCHEMA = `
     password_salt TEXT NOT NULL,
     agent TEXT NOT NULL UNIQUE,
     private_key TEXT NOT NULL,
-    codename TEXT NOT NULL
+    codename TEXT NOT NULL,
+    verification_entry TEXT,
+    vouches INTEGER NOT NULL DEFAULT 0
   );
   CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY,
@@ -51,11 +62,18 @@ export class Book {
 
   migrate() {
     this.sql.exec(SCHEMA);
-    const columns = this.sql.exec<{ name: string }>("PRAGMA table_info(users)").toArray();
-    if (!columns.some((column) => column.name === "avatar")) {
-      this.sql.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
-    }
+    this.addColumn("users", "avatar", "TEXT");
+    this.addColumn("users", "verification_entry", "TEXT");
+    this.addColumn("users", "vouches", "INTEGER NOT NULL DEFAULT 0");
+    this.addColumn("agents", "role", "TEXT NOT NULL DEFAULT 'unverified'");
     this.wipe();
+  }
+
+  private addColumn(table: string, column: string, definition: string) {
+    const columns = this.sql.exec<{ name: string }>(`PRAGMA table_info(${table})`).toArray();
+    if (!columns.some((existing) => existing.name === column)) {
+      this.sql.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
   }
 
   private wipe() {
@@ -187,6 +205,8 @@ export class Book {
           agent: string;
           private_key: string;
           codename: string;
+          verification_entry: string | null;
+          vouches: number;
         }>("SELECT * FROM users WHERE username = ?", username)
         .toArray()[0] ?? null
     );
@@ -222,9 +242,15 @@ export class Book {
           private_key: string;
           codename: string;
           avatar: string | null;
+          verification_entry: string | null;
+          vouches: number;
+          role: Role;
         }>(
-          `SELECT users.id, users.username, users.agent, users.private_key, users.codename, users.avatar
+          `SELECT users.id, users.username, users.agent, users.private_key, users.codename, users.avatar,
+            users.verification_entry, users.vouches,
+            COALESCE(agents.role, 'unverified') AS role
        FROM sessions JOIN users ON users.id = sessions.user_id
+       LEFT JOIN agents ON agents.id = users.agent
        WHERE sessions.token_hash = ? AND sessions.expires_at > ?`,
           tokenHash,
           now,
@@ -250,8 +276,29 @@ export class Book {
     this.sql.exec("UPDATE users SET username = ? WHERE id = ?", newUsername, userId);
   }
 
+  renameCodename(userId: number, newCodename: string) {
+    this.sql.exec("UPDATE users SET codename = ? WHERE id = ?", newCodename, userId);
+    this.sql.exec(
+      "UPDATE agents SET codename = ? WHERE id = (SELECT agent FROM users WHERE id = ?)",
+      newCodename,
+      userId,
+    );
+  }
+
   setAvatar(userId: number, avatar: string | null) {
     this.sql.exec("UPDATE users SET avatar = ? WHERE id = ?", avatar, userId);
+  }
+
+  setVerificationEntry(userId: number, entry: VerificationEntry) {
+    this.sql.exec(
+      "UPDATE users SET verification_entry = ? WHERE id = ?",
+      JSON.stringify(entry),
+      userId,
+    );
+  }
+
+  setRole(agent: string, role: Role) {
+    this.sql.exec("UPDATE agents SET role = ? WHERE id = ?", role, agent);
   }
 
   userById(userId: number) {
@@ -265,6 +312,8 @@ export class Book {
           agent: string;
           private_key: string;
           codename: string;
+          verification_entry: string | null;
+          vouches: number;
         }>("SELECT * FROM users WHERE id = ?", userId)
         .toArray()[0] ?? null
     );

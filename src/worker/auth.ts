@@ -30,3 +30,11 @@ export function sessionCookie(token: string, expiresAt: number) {
 export function clearSessionCookie() {
   return "session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
 }
+
+export function fakeAccountCookie() {
+  return "fakeAccount=true; Path=/; Secure; SameSite=Lax";
+}
+
+export function clearFakeAccountCookie() {
+  return "fakeAccount=; Path=/; Secure; SameSite=Lax; Max-Age=0";
+}

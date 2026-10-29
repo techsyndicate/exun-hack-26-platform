@@ -180,9 +180,15 @@
 }
 
 .account-footer {
+  display: flex;
+  gap: 1rem;
   margin-top: 4rem;
   padding-top: 2rem;
   border-top: 1px solid #4d3621;
+}
+
+.account-role {
+  text-transform: capitalize;
 }
 
 .account .account-logout {

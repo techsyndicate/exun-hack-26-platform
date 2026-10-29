@@ -107,6 +107,18 @@ export function AccountPage() {
     show("Username updated.");
   }
 
+  async function makeAdmin() {
+    if (!me) return;
+
+    const response = await fetch("/api/auth/make-admin", { method: "POST" });
+    if (!response.ok) {
+      show(await errorFrom(response, "couldn't make you an admin."), true);
+      return;
+    }
+    setMe({ ...me, role: "admin" });
+    show("You're an admin now.");
+  }
+
   if (me === undefined) {
     return (
       <div className="main account-page">
@@ -175,6 +187,12 @@ export function AccountPage() {
           </div>
         </div>
 
+        {me.role === "unverified" && (
+          <p className="account-message">
+            Your account is waiting to be verified. Until then you can only use
+            the home page.
+          </p>
+        )}
         {message && (
           <p className="account-message" role="status">
             {message}
@@ -191,6 +209,8 @@ export function AccountPage() {
           <dd>{me.username}</dd>
           <dt>Codename</dt>
           <dd>{me.codename}</dd>
+          <dt>Role</dt>
+          <dd className="account-role">{me.role}</dd>
           <dt>Agent key</dt>
           <dd className="break">{me.agent}</dd>
         </dl>
@@ -216,6 +236,9 @@ export function AccountPage() {
         </form>
 
         <div className="account-footer">
+          {me.role !== "admin" && (
+            <button onClick={() => void makeAdmin()}>Make admin</button>
+          )}
           <button className="account-logout" onClick={() => void logout()}>
             Log out
           </button>

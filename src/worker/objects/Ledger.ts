@@ -1,12 +1,8 @@
 import { DurableObject } from "cloudflare:workers";
-import {
-  GENESIS_NOTE,
-  hashBlock,
-  type Block,
-  type BlockBody,
-} from "../../shared/ledger/block";
+import { GENESIS_NOTE, hashBlock, type Block, type BlockBody } from "../../shared/ledger/block";
 import { effectsOf } from "../../shared/ledger/effects";
-import type { Submission, Tx } from "../../shared/ledger/schema";
+import type { Submission, Tx, VerificationEntry } from "../../shared/ledger/schema";
+import type { Role } from "../../shared/roles";
 import { verifySignature, withinClockSkew } from "../../shared/signature";
 import { Book } from "../ledger/book";
 import { record, rejection } from "../ledger/rules";
@@ -57,7 +53,7 @@ export class Ledger extends DurableObject<Env> {
   agents() {
     return this.book
       .agents()
-      .map(({ id, codename, joined }) => ({ id, codename, joined }));
+      .map(({ id, codename, joined, role }) => ({ id, codename, joined, role }));
   }
 
   agent(id: string) {
@@ -66,6 +62,11 @@ export class Ledger extends DurableObject<Env> {
 
   codename(id: string) {
     return this.book.agent(id)?.codename ?? null;
+  }
+
+  member(id: string) {
+    const agent = this.book.agent(id);
+    return agent ? { codename: agent.codename, role: agent.role } : null;
   }
 
   profile(id: string) {
@@ -93,6 +94,10 @@ export class Ledger extends DurableObject<Env> {
     return this.book.addUser(user);
   }
 
+  addAgent(id: string, codename: string, joined: number) {
+    this.book.addAgent(id, codename, joined);
+  }
+
   session(tokenHash: string, now: number) {
     return this.book.session(tokenHash, now);
   }
@@ -108,8 +113,20 @@ export class Ledger extends DurableObject<Env> {
     this.book.renameUser(userId, newUsername);
   }
 
+  renameCodename(userId: number, newCodename: string) {
+    this.book.renameCodename(userId, newCodename);
+  }
+
   setAvatar(userId: number, avatar: string | null) {
     this.book.setAvatar(userId, avatar);
+  }
+
+  setVerificationEntry(userId: number, entry: VerificationEntry) {
+    this.book.setVerificationEntry(userId, entry);
+  }
+
+  setRole(agent: string, role: Role) {
+    this.book.setRole(agent, role);
   }
 
   private async process({ tx, signature }: Submission): Promise<SubmitResult> {

@@ -1,10 +1,17 @@
 import { useEffect, useSyncExternalStore } from "react";
+import type { Role } from "../shared/roles";
 
 export type Me = {
   username: string;
   agent: string;
   codename: string;
   avatar: string | null;
+  verificationEntry: {
+    exuniteCode: number;
+    details: string;
+  } | null;
+  vouches: number;
+  role: Role;
 };
 
 export const DEFAULT_AVATAR = "/assets/home/profile.png";

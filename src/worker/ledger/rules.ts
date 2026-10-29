@@ -12,6 +12,7 @@ export function rejection(tx: Tx, book: Book, _now: number): string | null {
   }
 
   if (!agent) return "Enlist before filing anything else.";
+  if (agent.role === "unverified") return "Your account hasn't been verified yet.";
   if (tx.nonce !== agent.nonce) return "This was signed out of order. Refresh and try again.";
 
   if (tx.to === tx.agent) return "You can't send resources to yourself.";
