@@ -1,0 +1,53 @@
+.main-vouch {
+  /* padding-top: 5vh; */
+  background-color: var(--color-bg);
+  margin: 0 !important;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.vouch-content {
+  margin-top: 6vh;
+  text-align: center;
+  color: #eadcc8;
+}
+
+.vouch-content p {
+  margin-top: 2vh;
+}
+
+.admin-note {
+  color: #ff0000;
+}
+
+.vouch-message {
+  margin-top: 3vh;
+  text-align: center;
+  color: #e0a653;
+}
+
+.main-vouch .ledger-blocks {
+  margin-top: 4vh;
+}
+
+.vouch-button {
+  margin: 0;
+  padding: 0.35rem 1.1rem;
+  font-family: "Optimus Princeps", Courier, monospace;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  cursor: pointer;
+}
+
+.vouch-button:hover:not(:disabled) {
+  background-color: #e0a653;
+}
+
+.vouch-button:disabled {
+  background-color: transparent;
+  color: #a08c70;
+  border-color: #4d3621;
+  cursor: default;
+}

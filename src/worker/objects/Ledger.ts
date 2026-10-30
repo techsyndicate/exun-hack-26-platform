@@ -143,6 +143,32 @@ export class Ledger extends DurableObject<Env> {
     }));
   }
 
+  unvouched(voucher: string) {
+    return this.book.unvouched(voucher).map((row) => ({
+      username: row.username,
+      codename: row.codename,
+      agent: row.agent,
+      vouches: row.vouches,
+      joined: row.joined,
+      vouched: row.vouched === 1,
+      entry: row.verification_entry
+        ? (JSON.parse(row.verification_entry) as VerificationEntry)
+        : null,
+    }));
+  }
+
+  vouch(voucher: string, target: string) {
+    if (voucher === target) return "You can't vouch for yourself.";
+    const agent = this.book.agent(target);
+    if (!agent) return "No agent holds that key.";
+    if (agent.role !== "unverified") return `${agent.codename} is already ${agent.role}.`;
+    if (this.book.hasVouched(voucher, target)) {
+      return `You've already vouched for ${agent.codename}.`;
+    }
+    this.ctx.storage.transactionSync(() => this.book.addVouch(voucher, target, Date.now()));
+    return null;
+  }
+
   private async process({ tx, signature }: Submission): Promise<SubmitResult> {
     const now = Date.now();
     if (!withinClockSkew(tx.time, now)) {

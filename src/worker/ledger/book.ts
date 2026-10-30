@@ -53,6 +53,12 @@ const SCHEMA = `
   CREATE TABLE IF NOT EXISTS wipes (
     name TEXT PRIMARY KEY
   );
+  CREATE TABLE IF NOT EXISTS vouches (
+    voucher TEXT NOT NULL,
+    target TEXT NOT NULL,
+    time INTEGER NOT NULL,
+    PRIMARY KEY (voucher, target)
+  );
 `;
 
 const WIPE = "2026-10-29-2";
@@ -80,7 +86,7 @@ export class Book {
     const done = this.sql.exec("SELECT name FROM wipes WHERE name = ?", WIPE).toArray();
     if (done.length > 0) return;
 
-    for (const table of ["sessions", "users", "balances", "agents", "blocks"]) {
+    for (const table of ["sessions", "users", "balances", "agents", "blocks", "vouches"]) {
       this.sql.exec(`DELETE FROM ${table}`);
     }
     this.sql.exec("INSERT INTO wipes (name) VALUES (?)", WIPE);
@@ -318,6 +324,46 @@ export class Book {
        ORDER BY agents.joined DESC`,
       )
       .toArray();
+  }
+
+  unvouched(voucher: string) {
+    return this.sql
+      .exec<{
+        username: string;
+        codename: string;
+        agent: string;
+        verification_entry: string | null;
+        vouches: number;
+        joined: number;
+        vouched: number;
+      }>(
+        `SELECT users.username, users.codename, users.agent, users.verification_entry, users.vouches,
+          agents.joined,
+          EXISTS (SELECT 1 FROM vouches WHERE voucher = ?1 AND target = users.agent) AS vouched
+       FROM users JOIN agents ON agents.id = users.agent
+       WHERE agents.role = 'unverified' AND users.agent != ?1
+       ORDER BY agents.joined DESC`,
+        voucher,
+      )
+      .toArray();
+  }
+
+  hasVouched(voucher: string, target: string) {
+    return (
+      this.sql
+        .exec("SELECT 1 FROM vouches WHERE voucher = ? AND target = ?", voucher, target)
+        .toArray().length > 0
+    );
+  }
+
+  addVouch(voucher: string, target: string, time: number) {
+    this.sql.exec(
+      "INSERT INTO vouches (voucher, target, time) VALUES (?, ?, ?)",
+      voucher,
+      target,
+      time,
+    );
+    this.sql.exec("UPDATE users SET vouches = vouches + 1 WHERE agent = ?", target);
   }
 
   userById(userId: number) {

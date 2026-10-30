@@ -8,6 +8,7 @@ import { Direct } from "./pages/direct/Direct";
 import ArcadePage from "./pages/ArcadePage";
 import { useMe } from "./me";
 import Admin from "./pages/Admin";
+import VouchPage from "./pages/VouchPage";
 
 function currentPath() {
   return window.location.pathname;
@@ -57,5 +58,6 @@ function AgentRoutes({ path }: { path: string }) {
   if (path === "/direct") return <Direct />;
   if (path === "/arcade") return <ArcadePage />;
   if (path === "/admin") return <Admin />;
+  if (path === "/vouch") return <VouchPage />;
   return <HomePage />;
 }
