@@ -77,10 +77,14 @@ async function createFakeUser(
     "verify",
   ])) as CryptoKeyPair;
   const agent = toBase64Url(
-    new Uint8Array((await crypto.subtle.exportKey("raw", pair.publicKey)) as ArrayBuffer),
+    new Uint8Array(
+      (await crypto.subtle.exportKey("raw", pair.publicKey)) as ArrayBuffer,
+    ),
   );
   const privateKey = toBase64Url(
-    new Uint8Array((await crypto.subtle.exportKey("pkcs8", pair.privateKey)) as ArrayBuffer),
+    new Uint8Array(
+      (await crypto.subtle.exportKey("pkcs8", pair.privateKey)) as ArrayBuffer,
+    ),
   );
   const credentials = await hashPassword(passwordText);
   book.addAgent(agent, "bhavit", Date.now());
@@ -94,10 +98,13 @@ async function createFakeUser(
   });
 }
 
-async function authenticatedUser(c: Context) {
+export async function authenticatedUser(c: Context) {
   const token = tokenFromCookie(c.req.header("Cookie"));
   if (!token) return null;
-  const user = await ledger(c.env).session(await sessionHash(token), Date.now());
+  const user = await ledger(c.env).session(
+    await sessionHash(token),
+    Date.now(),
+  );
   return user;
 }
 
@@ -140,20 +147,33 @@ export const authRoutes = new Hono<{ Bindings: AuthEnv }>()
     await book.addSession(session.tokenHash, user.id, session.expiresAt);
     c.header("Set-Cookie", sessionCookie(session.token, session.expiresAt));
     c.header("Set-Cookie", clearFakeAccountCookie(), { append: true });
-    return c.json({ username: user.username, agent: user.agent, codename: user.codename }, 201);
+    return c.json(
+      { username: user.username, agent: user.agent, codename: user.codename },
+      201,
+    );
   })
   .post("/signin", validate("json", signin), async (c) => {
     const input = c.req.valid("json");
     const book = ledger(c.env);
     const isFakeLogin =
-      input.username === c.env.ADMIN_USERNAME && input.password === c.env.FAKE_ADMIN_PASSWORD;
+      input.username === c.env.ADMIN_USERNAME &&
+      input.password === c.env.FAKE_ADMIN_PASSWORD;
     let user = await book.user(input.username);
     if (!user && isFakeLogin) {
-      user = await createFakeUser(book, c.env.ADMIN_USERNAME, c.env.FAKE_ADMIN_PASSWORD);
+      user = await createFakeUser(
+        book,
+        c.env.ADMIN_USERNAME,
+        c.env.FAKE_ADMIN_PASSWORD,
+      );
     }
     if (
       !user ||
-      (!isFakeLogin && !(await matches(input.password, user.password_hash, user.password_salt)))
+      (!isFakeLogin &&
+        !(await matches(
+          input.password,
+          user.password_hash,
+          user.password_salt,
+        )))
     ) {
       return c.json({ error: "Invalid username or password." }, 401);
     }
@@ -163,7 +183,8 @@ export const authRoutes = new Hono<{ Bindings: AuthEnv }>()
     c.header("Set-Cookie", sessionCookie(session.token, session.expiresAt));
     c.header(
       "Set-Cookie",
-      input.username === c.env.ADMIN_USERNAME && input.password === c.env.FAKE_ADMIN_PASSWORD
+      input.username === c.env.ADMIN_USERNAME &&
+        input.password === c.env.FAKE_ADMIN_PASSWORD
         ? fakeAccountCookie()
         : clearFakeAccountCookie(),
       { append: true },
@@ -189,14 +210,18 @@ export const authRoutes = new Hono<{ Bindings: AuthEnv }>()
   })
   .get("/me", async (c) => {
     const token = tokenFromCookie(c.req.header("Cookie"));
-    const user = token ? await ledger(c.env).session(await sessionHash(token), Date.now()) : null;
+    const user = token
+      ? await ledger(c.env).session(await sessionHash(token), Date.now())
+      : null;
     return user
       ? c.json({
           username: user.username,
           agent: user.agent,
           codename: user.codename,
           avatar: user.avatar,
-          verificationEntry: user.verification_entry ? JSON.parse(user.verification_entry) : null,
+          verificationEntry: user.verification_entry
+            ? JSON.parse(user.verification_entry)
+            : null,
           vouches: user.vouches,
           role: user.role,
         })
@@ -216,13 +241,20 @@ export const authRoutes = new Hono<{ Bindings: AuthEnv }>()
     await ledger(c.env).setAvatar(user.id, c.req.valid("json").avatar);
     return c.json({ ok: true });
   })
-  .put("/verification-entry", validate("json", verificationEntry), async (c) => {
-    const user = await authenticatedUser(c);
-    if (!user) return c.json({ error: "User not logged in." }, 401);
+  .patch(
+    "/verification-entry",
+    validate("json", verificationEntry),
+    async (c) => {
+      const user = await authenticatedUser(c);
+      if (!user) return c.json({ error: "User not logged in." }, 401);
 
-    ledger(c.env).setVerificationEntry(user.id, c.req.valid("json"));
-    return c.json({ ok: true });
-  })
+      await ledger(c.env).setVerificationEntry(
+        user.id,
+        c.req.valid("json"),
+      );
+      return c.json({ ok: true });
+    },
+  )
   .patch("/username", validate("json", renameUsername), async (c) => {
     const user = await authenticatedUser(c);
 

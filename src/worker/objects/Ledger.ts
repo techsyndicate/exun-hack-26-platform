@@ -129,6 +129,20 @@ export class Ledger extends DurableObject<Env> {
     this.book.setRole(agent, role);
   }
 
+  verifications() {
+    return this.book.verifications().map((row) => ({
+      username: row.username,
+      codename: row.codename,
+      agent: row.agent,
+      role: row.role,
+      vouches: row.vouches,
+      joined: row.joined,
+      entry: row.verification_entry
+        ? (JSON.parse(row.verification_entry) as VerificationEntry)
+        : null,
+    }));
+  }
+
   private async process({ tx, signature }: Submission): Promise<SubmitResult> {
     const now = Date.now();
     if (!withinClockSkew(tx.time, now)) {

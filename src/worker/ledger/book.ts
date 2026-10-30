@@ -301,6 +301,25 @@ export class Book {
     this.sql.exec("UPDATE agents SET role = ? WHERE id = ?", role, agent);
   }
 
+  verifications() {
+    return this.sql
+      .exec<{
+        username: string;
+        codename: string;
+        agent: string;
+        verification_entry: string | null;
+        vouches: number;
+        role: Role;
+        joined: number | null;
+      }>(
+        `SELECT users.username, users.codename, users.agent, users.verification_entry, users.vouches,
+          COALESCE(agents.role, 'unverified') AS role, agents.joined
+       FROM users LEFT JOIN agents ON agents.id = users.agent
+       ORDER BY agents.joined DESC`,
+      )
+      .toArray();
+  }
+
   userById(userId: number) {
     return (
       this.sql

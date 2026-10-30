@@ -1,10 +1,14 @@
 import "./styles/home-page.css";
 import Navbar from "../components/Navbar";
 import { useState, type FormEvent } from "react";
+import { useMe } from "../me";
 
 export function HomePage() {
-  const [exuniteCode, setExuniteCode] = useState("");
-  const [details, setDetails] = useState("");
+  const me = useMe();
+  const [exuniteCode, setExuniteCode] = useState(
+    me?.verificationEntry?.exuniteCode.toString() ?? "",
+  );
+  const [details, setDetails] = useState(me?.verificationEntry?.details ?? "");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -15,7 +19,7 @@ export function HomePage() {
     setMessage("");
     setError("");
     const response = await fetch("/api/auth/verification-entry", {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exuniteCode: Number(exuniteCode), details }),
     });
@@ -28,6 +32,14 @@ export function HomePage() {
       return;
     }
     setMessage("Your details are sent for verification by the admin.");
+  }
+
+  if (me?.role !== "unverified") {
+    return (
+      <div className="container">
+        <Navbar />
+      </div>
+    );
   }
 
   return (
