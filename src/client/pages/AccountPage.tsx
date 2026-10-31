@@ -107,17 +107,6 @@ export function AccountPage() {
     show("Username updated.");
   }
 
-  async function makeAdmin() {
-    if (!me) return;
-
-    const response = await fetch("/api/auth/make-admin", { method: "POST" });
-    if (!response.ok) {
-      show(await errorFrom(response, "couldn't make you an admin."), true);
-      return;
-    }
-    setMe({ ...me, role: "admin" });
-    show("You're an admin now.");
-  }
 
   if (me === undefined) {
     return (
@@ -236,9 +225,6 @@ export function AccountPage() {
         </form>
 
         <div className="account-footer">
-          {me.role !== "admin" && (
-            <button onClick={() => void makeAdmin()}>Make admin</button>
-          )}
           <button className="account-logout" onClick={() => void logout()}>
             Log out
           </button>
