@@ -199,7 +199,7 @@ export function LedgerPage() {
         <h2 className="section-title" style={{ marginBottom: "-1vh" }}>
           Verify the chain
         </h2>
-        <p>
+        <p style={{ marginTop: "3vh", marginBottom: "1vh" }}>
           Download every block and check its hash, signature, links, and effects
           in this browser.
         </p>
