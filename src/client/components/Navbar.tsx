@@ -60,6 +60,11 @@ function Navbar() {
             ARCADE
           </a>
         </h1>
+        <h1>
+          <a className="nav-link" href="/vouch">
+            VOUCH
+          </a>
+        </h1>
         {me?.role === "admin" && (
           <h1>
             <a className="nav-link" href="/admin">
